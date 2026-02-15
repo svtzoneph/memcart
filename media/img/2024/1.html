@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Collection | Zone Vault</title>
+  <title>Collection</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -15,55 +15,146 @@
     body.light-mode {
         --bg: #f3f4f6; --text: #1f2937; --header-bg: #ffffff; --card-bg: #ffffff;
         --border: rgba(0,0,0,0.1); --pill-bg: #e5e7eb;
-        --lb-bg: #f9fafb; /* Light theme expand background */
+        --lb-bg: #f9fafb; 
         --lb-btn-bg: rgba(0,0,0,0.05); --lb-btn-text: #1f2937;
     }
+    
+    body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+    input, textarea { -webkit-user-select: text; -ms-user-select: text; user-select: text; }
+    
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 20px; padding-top: 150px; transition: background 0.3s, color 0.3s; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 20px; padding-top: 140px; transition: background 0.3s, color 0.3s; }
 
     /* --- FLOATING PILL HEADER --- */
-    .header-container { position: fixed; top: 15px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 1000; padding: 0 15px; }
+    .header-container { position: fixed; top: 25px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 1000; padding: 0 15px; }
+    
     .header { 
-        width: 100%; max-width: 500px; background: var(--header-bg); 
-        border: 1px solid var(--border); border-radius: 40px; padding: 15px 20px; 
-        display: grid; grid-template-columns: 50px 1fr 80px; align-items: center;
+        background: var(--header-bg); 
+        border: 1px solid var(--border);
+        border-radius: 9999px; 
+        height: auto;
+        min-height: 55px; /* Slightly smaller min-height for mobile */
+        padding: 10px 25px; 
+        display: grid; 
+        grid-template-columns: 45px 1fr 85px; 
+        align-items: center;
         box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     }
-    .nav-left { display: flex; justify-content: flex-start; }
-    .round-btn { width: 40px; height: 40px; background: var(--pill-bg); color: var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; transition: 0.2s; }
-    .page-title { font-weight: 800; font-size: 14px; color: var(--text); line-height: 1.2; text-transform: uppercase; text-align: center; padding: 0 10px; word-wrap: break-word; }
-    .nav-right { display: flex; justify-content: flex-end; gap: 8px; }
-    .icon-btn { background: transparent; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; opacity: 0.8; }
 
-    /* --- MASONRY GRID --- */
-    .gallery-grid { column-count: 2; column-gap: 15px; max-width: 1400px; margin: 0 auto; }
-    @media (min-width: 768px) { .gallery-grid { column-count: 4; } }
-    .grid-item { break-inside: avoid; margin-bottom: 15px; border-radius: 15px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--border); cursor: pointer; }
-    .grid-item img { width: 100%; height: auto; display: block; transition: 0.3s; }
+    .nav-left { display: flex; justify-content: flex-start; align-items: center; }
+    .round-btn { width: 40px; height: 40px; background: var(--pill-bg); color: var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; transition: 0.2s; flex-shrink: 0; }
+    .round-btn:hover { background: var(--accent); color: white; }
+    
+    .page-title { 
+        font-weight: 700; 
+        font-size: 16px; 
+        color: var(--text); 
+        line-height: 1.3; 
+        text-transform: uppercase; 
+        text-align: center; 
+        padding: 0 15px; 
+        white-space: normal; 
+        word-break: break-word;
+    }
 
-    /* --- LIGHTBOX (THEME RESPONSIVE) --- */
-    .lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--lb-bg); z-index: 9999; display: none; flex-direction: column; transition: background 0.3s; }
+    /* --- MOBILE ADJUSTMENTS (Smaller Text) --- */
+    @media (max-width: 600px) {
+        .page-title { 
+            font-size: 11px; /* Mas maliit na font size */
+            line-height: 1.4;
+            padding: 0 8px; 
+            font-weight: 600;
+        }
+        .header { 
+            padding: 8px 15px; 
+            grid-template-columns: 40px 1fr 75px; 
+            min-height: 50px;
+        }
+        .header-container { padding: 0 10px; top: 20px; }
+        .round-btn { width: 35px; height: 35px; font-size: 14px; }
+        .icon-btn { font-size: 16px; padding: 8px; }
+    }
+
+    .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 5px; flex-shrink: 0; }
+    .icon-btn { background: transparent; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 10px; border-radius: 50%; transition: 0.2s; opacity: 0.8; }
+    .icon-btn:hover { background: var(--pill-bg); opacity: 1; }
+
+    /* --- GALLERY GRID --- */
+    .gallery-grid { 
+        display: flex; 
+        flex-wrap: wrap;
+        justify-content: center; 
+        gap: 12px; 
+        max-width: 1400px; 
+        margin: 0 auto; 
+    }
+    
+    .grid-item { 
+        width: calc(50% - 6px); /* 2 columns on mobile */
+        margin-bottom: 0; 
+        border-radius: 12px; 
+        overflow: hidden; 
+        background: var(--card-bg); 
+        border: 1px solid var(--border); 
+        cursor: pointer; 
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .gallery-grid { gap: 20px; }
+        .grid-item {
+            width: 320px; 
+            flex-grow: 1; 
+            max-width: 400px; 
+            border-radius: 20px;
+        }
+    }
+
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: 0.3s; }
+    .grid-item:hover img { transform: scale(1.03); }
+
+    /* --- LIGHTBOX (ANIMATED) --- */
+    .lightbox { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: var(--lb-bg); z-index: 9999; 
+        display: none; flex-direction: column; 
+        transition: background 0.3s; 
+    }
     .lightbox.active { display: flex; animation: fadeIn 0.2s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .lb-header { padding: 20px; display: flex; justify-content: flex-end; position: absolute; top: 0; width: 100%; z-index: 10001; }
-    .lb-btn { color: var(--lb-btn-text); font-size: 22px; cursor: pointer; background: var(--lb-btn-bg); border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .lb-header { height: 60px; width: 100%; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; z-index: 10001; flex-shrink: 0; }
+    .lb-btn { color: var(--lb-btn-text); font-size: 22px; cursor: pointer; background: var(--lb-btn-bg); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 
-    .lb-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 40px; padding-bottom: 120px; }
+    .lb-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; overflow: hidden; }
+    
+    /* Animated Image */
     .lb-img { 
-        max-width: 100%; max-height: 100%; 
-        object-fit: contain; border-radius: 12px; 
-        box-shadow: 0 30px 60px rgba(0,0,0,0.3); 
-        user-select: none;
+        max-width: 90%; max-height: 80vh; 
+        width: auto; height: auto; 
+        object-fit: contain; 
+        border-radius: 20px; 
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+        user-select: none; 
+        opacity: 1;
+        transform: scale(1);
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+    }
+    
+    .lb-img.animating {
+        opacity: 0;
+        transform: scale(0.92);
     }
 
-    .lb-footer { height: 100px; width: 100%; position: absolute; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10001; padding-bottom: 15px; }
-    .lb-thumbs { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px; scrollbar-width: none; max-width: 100%; }
-    .lb-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; opacity: 0.4; border: 2px solid transparent; flex-shrink: 0; transition: 0.2s; cursor: pointer; }
-    .lb-thumb.active { opacity: 1; border-color: var(--accent); transform: scale(1.15); }
+    @media (max-width: 768px) { .lb-img { max-width: 95%; max-height: 70vh; border-radius: 12px; } }
 
-    .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); font-size: 35px; color: var(--lb-btn-text); opacity: 0.4; cursor: pointer; padding: 20px; z-index: 10002; transition: 0.2s; display: none; }
-    .nav-arrow:hover { opacity: 1; }
+    .lb-footer { height: 90px; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 10001; flex-shrink: 0; padding-bottom: 10px; }
+    .lb-thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; scrollbar-width: none; max-width: 100%; align-items: center; height: 100%; }
+    .lb-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; opacity: 0.4; border: 2px solid transparent; flex-shrink: 0; transition: 0.2s; cursor: pointer; }
+    .lb-thumb.active { opacity: 1; border-color: var(--accent); transform: scale(1.1); }
+
+    .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); font-size: 30px; color: var(--lb-btn-text); opacity: 0.5; cursor: pointer; padding: 20px; z-index: 10002; transition: 0.2s; display: none; }
+    .nav-arrow:hover { opacity: 1; background: rgba(0,0,0,0.1); border-radius: 50%; }
     .nav-left { left: 10px; } .nav-right { right: 10px; }
     @media(min-width: 1024px) { .nav-arrow { display: block; } }
 
@@ -73,11 +164,19 @@
     .modal-icon { width: 50px; height: 50px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
   </style>
 </head>
+
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart', e => e.preventDefault());
+  document.addEventListener('selectstart', e => e.preventDefault());
+  document.onkeydown = function(e) { if(e.keyCode == 123) return false; };
+</script>
+
 <body>
 
 <div class="header-container">
     <div class="header">
-        <div class="nav-left"><a href="index.html" class="round-btn"><i class="fas fa-arrow-left"></i></a></div>
+        <div class="nav-left"><a href="https://mem-collection.vercel.app" class="round-btn"><i class="fas fa-arrow-left"></i></a></div>
         <div class="page-title">[17ehind] SEVENTEEN 'MAESTRO' MV Behind Photo 3</div>
         <div class="nav-right">
             <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-sun" id="themeIcon"></i></button>
@@ -121,7 +220,7 @@
     }
     initTheme();
 
-    const images = [
+const images = [
         { src: "https://res.cloudinary.com/dp6x9xmku/image/upload/v1771132601/weverse_4-289158325_kqdlhh.jpg" },
         { src: "https://res.cloudinary.com/dp6x9xmku/image/upload/v1771132600/weverse_4-289158324_ojvqjs.jpg" },
         { src: "https://res.cloudinary.com/dp6x9xmku/image/upload/v1771132599/weverse_4-289158323_xhlkbh.jpg" },
@@ -169,23 +268,51 @@
         thumb.src = item.src;
         thumb.className = 'lb-thumb';
         thumb.id = `thumb-${index}`;
-        thumb.onclick = () => { currentIndex = index; updateLightbox(); };
+        thumb.onclick = () => { currentIndex = index; updateLightbox(false); }; 
         lbThumbs.appendChild(thumb);
     });
 
-    function openLightbox(index) { currentIndex = index; updateLightbox(); lightbox.classList.add('active'); document.body.style.overflow = 'hidden'; }
-    function closeLightbox() { lightbox.classList.remove('active'); document.body.style.overflow = 'auto'; }
-    function updateLightbox() {
+    function openLightbox(index) { 
+        currentIndex = index; 
+        updateLightbox(true); 
+        lightbox.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
+    }
+    
+    function closeLightbox() { 
+        lightbox.classList.remove('active'); 
+        document.body.style.overflow = 'auto'; 
+    }
+    
+    function updateLightbox(skipAnimation = false) {
         if(currentIndex < 0) currentIndex = images.length - 1;
         if(currentIndex >= images.length) currentIndex = 0;
-        lbImage.src = images[currentIndex].src;
-        document.querySelectorAll('.lb-thumb').forEach(t => t.classList.remove('active'));
-        const active = document.getElementById(`thumb-${currentIndex}`);
-        active.classList.add('active');
-        active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        
+        const updateThumbs = () => {
+            document.querySelectorAll('.lb-thumb').forEach(t => t.classList.remove('active'));
+            const active = document.getElementById(`thumb-${currentIndex}`);
+            if(active) {
+                active.classList.add('active');
+                active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        };
+
+        if(skipAnimation) {
+            lbImage.src = images[currentIndex].src;
+            updateThumbs();
+        } else {
+            lbImage.classList.add('animating');
+            setTimeout(() => {
+                lbImage.src = images[currentIndex].src;
+                updateThumbs();
+                lbImage.onload = () => { lbImage.classList.remove('animating'); };
+                setTimeout(() => lbImage.classList.remove('animating'), 20);
+            }, 250); 
+        }
     }
-    function nextImage() { currentIndex++; updateLightbox(); }
-    function prevImage() { currentIndex--; updateLightbox(); }
+    
+    function nextImage() { currentIndex++; updateLightbox(false); }
+    function prevImage() { currentIndex--; updateLightbox(false); }
     
     document.addEventListener('keydown', (e) => {
         if(!lightbox.classList.contains('active')) return;
