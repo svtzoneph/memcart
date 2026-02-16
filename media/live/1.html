@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>SEVENTEEN ZONE PH - Live</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root { 
+        --bg: #050505; --text: #ffffff; --header-bg: #0a0a0a; 
+        --border: rgba(255,255,255,0.1); --accent: #8b5cf6; 
+        --pill-bg: #151515; --card-bg: #1a1a1a;
+        --control-bg: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        --success: #22c55e;
+    }
+    body.light-mode {
+        --bg: #e5e7eb; --text: #1f2937; --header-bg: #ffffff; 
+        --border: rgba(0,0,0,0.05); --pill-bg: #f3f4f6; --card-bg: #ffffff;
+    }
+    
+    * { 
+        box-sizing: border-box; 
+        -webkit-tap-highlight-color: transparent; 
+        outline: none; 
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: 'Outfit', sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        height: 100vh; 
+        overflow: hidden; 
+        transition: background 0.3s; 
+    }
+
+    /* --- HEADER --- */
+    .header-container { position: fixed; top: 20px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 1000; padding: 0 20px; }
+    .header { width: 100%; max-width: 1400px; background: var(--header-bg); border: 1px solid var(--border); border-radius: 30px; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 60px; }
+    .brand-section { display: flex; align-items: center; gap: 15px; }
+    .logo { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; color: var(--text); letter-spacing: 0.5px; text-transform: uppercase; }
+    .logo-img { height: 32px; width: auto; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3)); pointer-events: none; }
+    
+    .nav-right { display: flex; align-items: center; gap: 5px; }
+    .icon-btn { background: transparent; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 10px; border-radius: 50%; transition: 0.2s; opacity: 0.8; }
+    .icon-btn:hover { background: var(--pill-bg); opacity: 1; }
+    
+    .back-btn { color: var(--text); font-size: 20px; text-decoration: none; margin-right: 15px; opacity: 0.8; transition: 0.2s; }
+    .back-btn:hover { opacity: 1; }
+
+    /* --- MAIN CONTAINER --- */
+    .main-container { 
+        position: fixed; 
+        top: 120px; /* Tinaasan ang space mula sa header */
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 100%; 
+        max-width: 1200px; 
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: calc(100vh - 120px);
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+    .main-container::-webkit-scrollbar { display: none; }
+
+    /* --- PLAYER WRAPPER --- */
+    .player-wrapper {
+        width: 100%;
+        max-width: 1000px;
+        background: #000;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        position: relative;
+        aspect-ratio: 16/9;
+        margin-bottom: 50px; /* INCREASED SPACE HERE para hindi dikit sa title */
+        border: 1px solid var(--border);
+    }
+    
+    video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    /* --- INFO SECTION --- */
+    .video-info { 
+        width: 100%; 
+        max-width: 1000px; 
+        padding: 0 15px 40px 15px; /* Added bottom padding for scroll space */
+        text-align: left;
+    }
+    .video-title { margin: 0 0 15px 0; font-size: 26px; font-weight: 800; line-height: 1.3; color: var(--text); text-transform: uppercase; }
+    .video-meta { font-size: 15px; color: #888; display: flex; align-items: center; gap: 20px; }
+
+    /* --- CONTROLS --- */
+    .controls-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+    .player-wrapper.show-controls .controls-overlay { opacity: 1; pointer-events: auto; }
+    
+    .bottom-bar { background: var(--control-bg); padding: 25px; display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .ctrl-btn { background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; transition: 0.2s; }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+    
+    .volume-container { display: flex; align-items: center; gap: 12px; margin-left: 10px; }
+    input[type=range] { -webkit-appearance: none; width: 90px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 5px; outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: white; border-radius: 50%; cursor: pointer; }
+    
+    .live-badge { color: white; font-weight: 800; font-size: 14px; letter-spacing: 1.5px; margin-right: 15px; display: flex; align-items: center; gap: 8px; }
+
+    .center-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); font-size: 70px; color: rgba(255,255,255,0.9); opacity: 0; pointer-events: none; transition: all 0.2s; }
+    .center-icon.animate { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    .center-icon.fade-out { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+
+    /* --- TOAST --- */
+    .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--header-bg); border: 1px solid var(--border); padding: 20px 35px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 11000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(20px); text-align: center; }
+    .share-modal.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    .modal-icon { width: 45px; height: 45px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+    @media (max-width: 900px) {
+        .header { padding: 15px 20px; } .logo-img { height: 28px; }
+        .main-container { top: 110px; padding: 0 15px; }
+        .player-wrapper { margin-bottom: 35px; border-radius: 16px; }
+        .video-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="header">
+        <div class="brand-section">
+            <a href="https://mem-collection.vercel.app" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <div class="logo">
+                <img src="https://res.cloudinary.com/dp6x9xmku/image/upload/v1771253635/1-removebg-preview_zteop7.png" alt="SVT Logo" class="logo-img">
+                SEVENTEEN ZONE PH
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn" onclick="shareLive()"><i class="fas fa-share-nodes"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="player-wrapper" id="videoContainer">
+        <video id="videoPlayer" playsinline crossorigin="anonymous" autoplay muted poster="https://res.cloudinary.com/dp6x9xmku/image/upload/v1771258706/holiday_j89g2g.jpg"></video>
+        <div class="center-icon" id="centerIcon"><i class="fas fa-play"></i></div>
+        <div class="controls-overlay" id="controlsOverlay">
+            <div class="bottom-bar">
+                <div style="display:flex; align-items:center;">
+                    <button class="ctrl-btn" id="playBtn"><i class="fas fa-pause"></i></button>
+                    <div class="volume-container">
+                        <button class="ctrl-btn" id="muteBtn" style="width: 35px;"><i class="fas fa-volume-mute"></i></button>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0">
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div class="live-badge">LIVE</div>
+                    <button class="ctrl-btn" id="fsBtn"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-info">
+        <h1 class="video-title" id="videoTitle">SEVENTEEN 2025 JAPAN FANMEETING 'HOLIDAY'</h1>
+        <div class="video-meta">
+            <span><i class="far fa-eye"></i> Watching Now</span>
+            <span><i class="far fa-calendar"></i> Feb 21, 2026</span>
+        </div>
+    </div>
+</div>
+
+<div id="shareModal" class="share-modal">
+    <div class="modal-icon"><i class="fas fa-check"></i></div>
+    <h3 style="color:var(--text); margin:0; font-size:16px;">Link Copied!</h3>
+</div>
+
+<script>
+    // --- SECURITY ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = e => {
+        if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 67, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
+    };
+
+    // --- SHARE ---
+    function shareLive() {
+        const baseUrl = window.location.href.split('?')[0];
+        const title = encodeURIComponent(document.getElementById('videoTitle').innerText);
+        const rand = Math.floor(100000 + Math.random() * 900000);
+        const shareUrl = `${baseUrl}?title=${title}&token=svtzonevault-${rand}`;
+        
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            const modal = document.getElementById('shareModal');
+            modal.classList.add('active');
+            setTimeout(() => modal.classList.remove('active'), 2000);
+        });
+    }
+
+    // --- THEME ---
+    const themeIcon = document.getElementById('themeIcon');
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('zoneTheme', isLight ? 'light' : 'dark');
+        themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+    }
+    if (localStorage.getItem('zoneTheme') === 'light') {
+        document.body.classList.add('light-mode');
+        themeIcon.className = 'fas fa-sun';
+    }
+
+    // --- PLAYER ---
+    const video = document.getElementById('videoPlayer');
+    const streamUrl = 'https://nl.utako.moe/NHK_G/index.m3u8';
+    if (Hls.isSupported()) {
+        const hls = new Hls(); hls.loadSource(streamUrl); hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = streamUrl;
+    }
+
+    const container = document.getElementById('videoContainer');
+    const playBtn = document.getElementById('playBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const fsBtn = document.getElementById('fsBtn');
+    const centerIcon = document.getElementById('centerIcon');
+    let lastTap = 0, controlsTimeout;
+
+    function togglePlay() {
+        if (video.paused) { video.play(); playBtn.innerHTML = '<i class="fas fa-pause"></i>'; animateIcon('fa-play'); } 
+        else { video.pause(); playBtn.innerHTML = '<i class="fas fa-play"></i>'; animateIcon('fa-pause'); }
+    }
+    playBtn.onclick = e => { e.stopPropagation(); togglePlay(); };
+    muteBtn.onclick = e => {
+        e.stopPropagation();
+        video.muted = !video.muted;
+        video.volume = video.muted ? 0 : 1;
+        volumeSlider.value = video.volume;
+        muteBtn.innerHTML = video.volume === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+    };
+    volumeSlider.oninput = e => {
+        video.volume = e.target.value;
+        video.muted = video.volume === 0;
+        muteBtn.innerHTML = video.volume === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+    };
+    fsBtn.onclick = e => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) { container.requestFullscreen(); fsBtn.innerHTML = '<i class="fas fa-compress"></i>'; }
+        else { document.exitFullscreen(); fsBtn.innerHTML = '<i class="fas fa-expand"></i>'; }
+    };
+
+    function showControls() { 
+        container.classList.add('show-controls'); 
+        clearTimeout(controlsTimeout); 
+        controlsTimeout = setTimeout(() => { if(!video.paused) container.classList.remove('show-controls'); }, 3000); 
+    }
+    container.onclick = e => {
+        if(e.target.closest('.bottom-bar')) return;
+        const now = Date.now();
+        if (now - lastTap < 300) togglePlay();
+        else container.classList.contains('show-controls') ? container.classList.remove('show-controls') : showControls();
+        lastTap = now;
+    };
+    container.onmousemove = showControls;
+    function animateIcon(icon) {
+        centerIcon.innerHTML = `<i class="fas ${icon}"></i>`;
+        centerIcon.classList.remove('animate', 'fade-out');
+        void centerIcon.offsetWidth;
+        centerIcon.classList.add('animate');
+        setTimeout(() => centerIcon.classList.add('fade-out'), 300);
+    }
+    showControls();
+</script>
+</body>
+</html>
