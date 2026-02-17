@@ -195,8 +195,21 @@
     let supabaseClient = null;
     let channel = null;
 
-    // --- START ---
+// --- START ---
     window.addEventListener('load', () => {
+        // 1. Generate and show the secure URL in the address bar immediately
+        const params = new URLSearchParams(window.location.search);
+        if (!params.get('exp')) {
+            const now = Date.now();
+            const expiryTime = now + (2 * 60 * 1000); 
+            const title = document.getElementById('videoTitle').innerText;
+            const newUrl = `${window.location.pathname}?title=${encodeURIComponent(title)}&token=svtzonevault&exp=${expiryTime}`;
+            
+            // Push the secure link to the browser address bar immediately on load
+            window.history.replaceState(null, '', newUrl);
+        }
+
+        // 2. Run your existing checks and initializations
         if (!checkExpiry()) return;
 
         if (localStorage.getItem('zoneTheme') === 'light') {
@@ -206,7 +219,7 @@
 
         initPlayer();
         initSupabase();
-        startClock(); // Start the live time
+        startClock(); 
     });
 
     // --- LIVE CLOCK LOGIC ---
