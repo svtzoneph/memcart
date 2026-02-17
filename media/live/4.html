@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    :root { 
+ :root { 
         --bg: #050505; --text: #ffffff; --header-bg: #0a0a0a; 
         --border: rgba(255,255,255,0.1); --accent: #8b5cf6; 
         --pill-bg: #151515; --card-bg: #1a1a1a;
@@ -40,20 +40,39 @@
     .main-container { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1280px; padding: 30px 4% 0 4%; display: flex; flex-direction: column; align-items: center; height: calc(100vh - 100px); overflow-y: auto; scrollbar-width: none; }
     .main-container::-webkit-scrollbar { display: none; }
 
-    /* --- PLAYER AREA --- */
-    .player-wrapper { width: 100%; max-width: 1000px; background: #000; border-radius: 24px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); position: relative; aspect-ratio: 16/9; margin-bottom: 40px; border: 1px solid var(--border); }
+    /* --- PLAYER --- */
+    .player-wrapper { 
+        width: 100%; max-width: 1000px; 
+        background: #000; 
+        border-radius: 24px; 
+        overflow: hidden; 
+        position: relative; 
+        aspect-ratio: 16/9; 
+        margin-bottom: 40px; 
+        box-shadow: none !important;
+        border: none !important;
+    }
     video { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-    /* --- INFO SECTION --- */
+    /* --- INFO --- */
     .video-info { width: 100%; max-width: 1000px; padding: 0 10px 60px 10px; text-align: left; }
-    .video-title { margin: 0 0 10px 0; font-size: 24px; font-weight: 800; line-height: 1.2; color: var(--text); text-transform: uppercase; }
-    .video-meta { font-size: 14px; color: #888; display: flex; align-items: center; gap: 20px; font-weight: 500; flex-wrap: wrap;}
+    .video-title { margin: 0 0 20px 0; font-size: 24px; font-weight: 800; line-height: 1.2; color: var(--text); text-transform: uppercase; }
+    .video-meta { font-size: 13px; color: #888; display: flex; align-items: center; gap: 10px; font-weight: 600; flex-wrap: wrap;}
     
-    /* Stats Styling */
-    .stat-item { display: flex; align-items: center; gap: 6px; }
-    #liveCount, #shareCount { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; transition: color 0.3s; font-weight: 700; color: var(--text); }
+    /* MODIFIED: Rounded Box Styles for Stats */
+    .stat-item { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        background: var(--pill-bg); 
+        padding: 8px 16px; 
+        border-radius: 14px; 
+        border: 1px solid var(--border);
+        transition: transform 0.2s;
+    }
+    #liveCount, #shareCount, #currentTime { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; transition: color 0.3s; font-weight: 700; color: var(--text); }
 
-    /* --- AUTO-HIDE CONTROLS --- */
+    /* --- CONTROLS --- */
     .controls-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; transition: opacity 0.4s ease, visibility 0.4s; pointer-events: none; z-index: 10; }
     .player-wrapper.show-controls .controls-overlay { opacity: 1; pointer-events: auto; }
     .bottom-bar { background: var(--control-bg); padding: 20px 25px calc(20px + env(safe-area-inset-bottom)) 25px; display: flex; align-items: center; justify-content: space-between; width: 100%; }
@@ -68,12 +87,27 @@
     .center-icon.fade-out { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 
     /* EXPIRED SCREEN */
-    #expiredScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
+    #expiredScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
     .expired-icon { font-size: 50px; color: var(--error); margin-bottom: 20px; }
 
     /* MODAL */
-    .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--header-bg); border: 1px solid var(--border); padding: 25px 30px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 11000; opacity: 0; pointer-events: auto; transition: 0.3s; backdrop-filter: blur(20px); visibility: hidden; text-align: center; width: 280px; }
-    .share-modal.active { opacity: 1; transform: translate(-50%, -50%) scale(1); visibility: visible; }
+    .share-modal { 
+        position: fixed; top: 50%; left: 50%; 
+        transform: translate(-50%, -50%) scale(0.9); 
+        background: var(--header-bg); 
+        border: 1px solid var(--border); 
+        padding: 25px 30px; 
+        border-radius: 25px; 
+        display: flex; flex-direction: column; align-items: center; gap: 10px; 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+        z-index: 999999; 
+        opacity: 0; pointer-events: none; 
+        transition: all 0.3s ease; 
+        backdrop-filter: blur(20px); 
+        visibility: hidden; 
+        text-align: center; width: 280px; 
+    }
+    .share-modal.active { opacity: 1; transform: translate(-50%, -50%) scale(1); visibility: visible; pointer-events: auto; }
     .modal-icon { width: 45px; height: 45px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
 
     @media (max-width: 600px) {
@@ -86,6 +120,8 @@
         .ctrl-btn { font-size: 18px; width: 38px; height: 38px; }
         input[type=range] { width: 60px; }
         .ctrl-group { gap: 8px; } .live-badge { font-size: 11px; margin-right: 5px; }
+        .video-meta { gap: 8px; }
+        .stat-item { padding: 6px 10px; font-size: 11px; }
     }
   </style>
 </head>
@@ -108,8 +144,8 @@
             </div>
         </div>
         <div class="nav-right">
-            <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
-            <button class="icon-btn" onclick="broadcastShare()"><i class="fas fa-share-nodes"></i></button>
+            <button class="icon-btn" onclick="toggleTheme()" ontouchstart=""><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn" onclick="handleShare()" ontouchstart=""><i class="fas fa-share-nodes"></i></button>
         </div>
     </div>
 </div>
@@ -141,6 +177,7 @@
             <span class="stat-item"><i class="far fa-eye"></i> <span id="liveCount">...</span> Watching</span>
             <span class="stat-item"><i class="fas fa-share"></i> <span id="shareCount">0</span> Shares</span>
             <span class="stat-item"><i class="far fa-calendar"></i> Feb 21, 2026</span>
+            <span class="stat-item"><i class="far fa-clock"></i> <span id="currentTime">--:--:--</span></span>
         </div>
     </div>
 </div>
@@ -148,34 +185,42 @@
 <div id="shareModal" class="share-modal">
     <div class="modal-icon"><i class="fas fa-check"></i></div>
     <h3 style="color:var(--text); margin:0; font-size:16px;">Link Copied!</h3>
-    <p style="color:#888; font-size:12px; margin:0;">This link will expire in<br><b style="color:var(--text);">2 minutes</b>.</p>
+    <p style="color:#888; font-size:12px; margin:0;">This secure link expires in<br><b style="color:var(--text);">2 minutes</b>.</p>
 </div>
 
 <script>
-    // --- GLOBAL CONFIG & VARS ---
+    // --- SETUP ---
     const SUPABASE_URL = 'https://qycukzzueysguuygzdcx.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_0O9VOP25-PsAYknWeS3A7Q_ocat-IZz';
+    let supabaseClient = null;
     let channel = null;
 
-    // --- 1. STARTUP LOGIC ---
+    // --- START ---
     window.addEventListener('load', () => {
-        // Check 2 min expiry first
         if (!checkExpiry()) return;
 
-        // Init Theme
         if (localStorage.getItem('zoneTheme') === 'light') {
             document.body.classList.add('light-mode');
             document.getElementById('themeIcon').className = 'fas fa-sun';
         }
 
-        // Init Player
         initPlayer();
-        
-        // Init Realtime Features
-        initRealtime();
+        initSupabase();
+        startClock(); // Start the live time
     });
 
-    // --- 2. EXPIRY CHECKER ---
+    // --- LIVE CLOCK LOGIC ---
+    function startClock() {
+        function update() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('currentTime').innerText = timeStr;
+        }
+        setInterval(update, 1000);
+        update();
+    }
+
+    // --- EXPIRY ---
     function checkExpiry() {
         const params = new URLSearchParams(window.location.search);
         const expiresAt = params.get('exp');
@@ -191,58 +236,60 @@
         return true;
     }
 
-    // --- 3. SHARE & BROADCAST LOGIC (REALTIME) ---
-    async function broadcastShare() {
-        // A. Visual Feedback Immediately
-        const modal = document.getElementById('shareModal');
-        modal.classList.add('active');
-        setTimeout(() => modal.classList.remove('active'), 3000);
-        
-        // B. Generate 2-Min Link & Copy
+    // --- SHARE LOGIC ---
+    async function handleShare() {
         const now = Date.now();
         const expiryTime = now + (2 * 60 * 1000); 
-        const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
-        const shareUrl = `${baseUrl}?title=SVT_ZONE_LIVE&exp=${expiryTime}`;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const title = document.getElementById('videoTitle').innerText;
+        const shareUrl = `${baseUrl}?title=${encodeURIComponent(title)}&token=svtzonevault&exp=${expiryTime}`;
         
         try {
             await navigator.clipboard.writeText(shareUrl);
         } catch (e) {
-            console.log("Clipboard not supported");
+            console.log("Clipboard error", e);
         }
+        
+        const modal = document.getElementById('shareModal');
+        modal.classList.add('active');
+        setTimeout(() => { modal.classList.remove('active'); }, 3000);
 
-        // C. Update Local UI
-        incrementShareUI();
-
-        // D. Broadcast to OTHERS (Realtime)
-        if (channel) {
-            await channel.send({
-                type: 'broadcast',
-                event: 'new-share',
-                payload: { time: now }
-            });
-        }
-    }
-
-    function incrementShareUI() {
         const el = document.getElementById('shareCount');
         let current = parseInt(el.innerText.replace(/,/g, '')) || 0;
-        el.innerText = (current + 1).toLocaleString();
-        el.style.color = '#8b5cf6'; // Flash Purple
-        setTimeout(() => el.style.color = '', 300);
+        updateShareUI(current + 1);
+
+        if (supabaseClient) {
+            const { error } = await supabaseClient.rpc('increment_share');
+            if (error) console.error("DB Error", error);
+        }
     }
 
-    // --- 4. SUPABASE SETUP ---
-    function initRealtime() {
+    function updateShareUI(count) {
+        const el = document.getElementById('shareCount');
+        if (el.innerText !== count.toString()) {
+            el.innerText = count.toLocaleString();
+            el.style.color = '#8b5cf6';
+            setTimeout(() => el.style.color = '', 300);
+        }
+    }
+
+    // --- DB & REALTIME ---
+    async function initSupabase() {
         try {
-            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const viewerId = Math.random().toString(36).substring(2, 10);
             
-            // Connect to Room
-            channel = client.channel('svt_live_room_v1', {
+            const { data } = await supabaseClient
+                .from('video_stats')
+                .select('share_count')
+                .eq('id', 1)
+                .single();
+            if (data) updateShareUI(data.share_count);
+
+            channel = supabaseClient.channel('svt_live_room_v1', {
                 config: { presence: { key: viewerId } }
             });
 
-            // Listen for Viewers (Presence)
             channel.on('presence', { event: 'sync' }, () => {
                 const state = channel.presenceState();
                 const count = Object.keys(state).length;
@@ -252,24 +299,29 @@
                 setTimeout(() => el.style.color = '', 300);
             });
 
-            // Listen for Shares (Broadcast)
-            channel.on('broadcast', { event: 'new-share' }, (payload) => {
-                incrementShareUI(); // Someone else shared!
-            });
+            supabaseClient
+                .channel('db_changes')
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'video_stats', filter: 'id=eq.1' },
+                    (payload) => {
+                        if (payload.new && payload.new.share_count) {
+                            updateShareUI(payload.new.share_count);
+                        }
+                    }
+                )
+                .subscribe();
 
-            // Go Online
             channel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
                     await channel.track({ online_at: new Date().toISOString() });
                 }
             });
 
-        } catch (err) {
-            console.error("Supabase Error:", err);
-        }
+        } catch (err) { console.error(err); }
     }
 
-    // --- 5. PLAYER & UI CONTROLS ---
+    // --- PLAYER ---
     function initPlayer() {
         const video = document.getElementById('videoPlayer');
         const streamUrl = 'https://nl.utako.moe/NHK_G/index.m3u8';
@@ -356,7 +408,6 @@
         setTimeout(() => centerIcon.classList.add('fade-out'), 300);
     }
     
-    // Security
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = e => { if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 67, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false; };
 </script>
