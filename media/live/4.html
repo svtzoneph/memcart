@@ -236,13 +236,17 @@
         return true;
     }
 
-    // --- SHARE LOGIC ---
+// --- SHARE LOGIC ---
     async function handleShare() {
         const now = Date.now();
-        const expiryTime = now + (2 * 60 * 1000); 
+        const expiryTime = now + (2 * 60 * 1000); // 2 minutes from now
         const baseUrl = window.location.origin + window.location.pathname;
         const title = document.getElementById('videoTitle').innerText;
-        const shareUrl = `${baseUrl}?title=${encodeURIComponent(title)}&token=svtzonevault&exp=${expiryTime}`;
+        const queryParams = `?title=${encodeURIComponent(title)}&token=svtzonevault&exp=${expiryTime}`;
+        const shareUrl = baseUrl + queryParams;
+        
+        // THIS LINE UPDATES THE ADDRESS BAR AT THE TOP OF THE BROWSER
+        window.history.replaceState(null, '', shareUrl);
         
         try {
             await navigator.clipboard.writeText(shareUrl);
