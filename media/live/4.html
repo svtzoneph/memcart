@@ -7,133 +7,96 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     :root { 
         --bg: #050505; --text: #ffffff; --header-bg: #0a0a0a; 
         --border: rgba(255,255,255,0.1); --accent: #8b5cf6; 
         --pill-bg: #151515; --card-bg: #1a1a1a;
         --control-bg: linear-gradient(to top, rgba(0,0,0,0.9) 20%, transparent);
-        --success: #22c55e;
+        --success: #22c55e; --error: #ef4444;
     }
     body.light-mode {
         --bg: #e5e7eb; --text: #1f2937; --header-bg: #ffffff; 
         --border: rgba(0,0,0,0.05); --pill-bg: #f3f4f6; --card-bg: #ffffff;
     }
     
-    * { 
-        box-sizing: border-box; 
-        -webkit-tap-highlight-color: transparent; 
-        outline: none; 
-        -webkit-user-select: none;
-        user-select: none;
-    }
-
-    body { 
-        background: var(--bg); 
-        color: var(--text); 
-        font-family: 'Outfit', sans-serif; 
-        margin: 0; padding: 0; 
-        height: 100vh; overflow: hidden; 
-        transition: background 0.3s; 
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; transition: background 0.3s; }
 
     /* --- PERMANENT HEADER --- */
-    .header-container { position: fixed; top: 20px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 2000; padding: 0 4%; }
-    .header { width: 100%; max-width: 1280px; background: var(--header-bg); border: 1px solid var(--border); border-radius: 30px; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 60px; }
+    .header-container { position: fixed; top: 20px; left: 0; width: 100%; display: flex; justify-content: center; z-index: 9999; padding: 0 4%; pointer-events: none; }
+    .header { pointer-events: auto; width: 100%; max-width: 1280px; background: var(--header-bg); border: 1px solid var(--border); border-radius: 30px; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 60px; }
     .brand-section { display: flex; align-items: center; gap: 12px; }
     .logo { font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--text); letter-spacing: 0.5px; text-transform: uppercase; }
     .logo-img { height: 28px; width: auto; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3)); }
-    .nav-right { display: flex; align-items: center; gap: 2px; }
-    .icon-btn { background: transparent; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
+    .nav-right { display: flex; align-items: center; gap: 5px; }
+    .icon-btn { background: transparent; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 10px; border-radius: 50%; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+    .icon-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
     .back-btn { color: var(--text); font-size: 18px; text-decoration: none; margin-right: 10px; display: flex; align-items: center; }
 
     /* --- CINEMATIC CONTAINER --- */
-    .main-container { 
-        position: fixed; 
-        top: 100px; left: 50%; transform: translateX(-50%); 
-        width: 100%; max-width: 1280px; 
-        padding: 30px 4% 0 4%; 
-        display: flex; flex-direction: column; align-items: center;
-        height: calc(100vh - 100px); overflow-y: auto;
-        scrollbar-width: none;
-    }
+    .main-container { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1280px; padding: 30px 4% 0 4%; display: flex; flex-direction: column; align-items: center; height: calc(100vh - 100px); overflow-y: auto; scrollbar-width: none; }
     .main-container::-webkit-scrollbar { display: none; }
 
     /* --- PLAYER AREA --- */
-    .player-wrapper {
-        width: 100%; max-width: 1000px;
-        background: #000; border-radius: 24px;
-        overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-        position: relative; aspect-ratio: 16/9;
-        margin-bottom: 40px; 
-        border: 1px solid var(--border);
-    }
-    
+    .player-wrapper { width: 100%; max-width: 1000px; background: #000; border-radius: 24px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); position: relative; aspect-ratio: 16/9; margin-bottom: 40px; border: 1px solid var(--border); }
     video { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     /* --- INFO SECTION --- */
     .video-info { width: 100%; max-width: 1000px; padding: 0 10px 60px 10px; text-align: left; }
     .video-title { margin: 0 0 10px 0; font-size: 24px; font-weight: 800; line-height: 1.2; color: var(--text); text-transform: uppercase; }
-    .video-meta { font-size: 14px; color: #888; display: flex; align-items: center; gap: 15px; font-weight: 500; }
+    .video-meta { font-size: 14px; color: #888; display: flex; align-items: center; gap: 20px; font-weight: 500; flex-wrap: wrap;}
+    
+    /* Stats Styling */
+    .stat-item { display: flex; align-items: center; gap: 6px; }
+    #liveCount, #shareCount { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; transition: color 0.3s; font-weight: 700; color: var(--text); }
 
     /* --- AUTO-HIDE CONTROLS --- */
-    .controls-overlay { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        display: flex; flex-direction: column; justify-content: flex-end; 
-        opacity: 0; 
-        transition: opacity 0.4s ease, visibility 0.4s; 
-        pointer-events: none; z-index: 10; 
-    }
+    .controls-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; transition: opacity 0.4s ease, visibility 0.4s; pointer-events: none; z-index: 10; }
     .player-wrapper.show-controls .controls-overlay { opacity: 1; pointer-events: auto; }
-    
-    .bottom-bar { 
-        background: var(--control-bg); 
-        padding: 20px 25px calc(20px + env(safe-area-inset-bottom)) 25px; 
-        display: flex; align-items: center; justify-content: space-between; width: 100%; 
-    }
-    
+    .bottom-bar { background: var(--control-bg); padding: 20px 25px calc(20px + env(safe-area-inset-bottom)) 25px; display: flex; align-items: center; justify-content: space-between; width: 100%; }
     .ctrl-group { display: flex; align-items: center; gap: 15px; }
     .ctrl-btn { background: transparent; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; transition: 0.2s; }
-    
     .volume-container { display: flex; align-items: center; gap: 8px; }
     input[type=range] { -webkit-appearance: none; width: 80px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 5px; outline: none; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: white; border-radius: 50%; cursor: pointer; }
-    
     .live-badge { color: white; font-weight: 800; font-size: 13px; letter-spacing: 1.5px; margin-right: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
     .center-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); font-size: 70px; color: rgba(255,255,255,0.9); opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 11; }
     .center-icon.animate { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
     .center-icon.fade-out { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 
-    /* PHONE FRIENDLY ADJUSTMENTS */
+    /* EXPIRED SCREEN */
+    #expiredScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
+    .expired-icon { font-size: 50px; color: var(--error); margin-bottom: 20px; }
+
+    /* MODAL */
+    .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--header-bg); border: 1px solid var(--border); padding: 25px 30px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 11000; opacity: 0; pointer-events: auto; transition: 0.3s; backdrop-filter: blur(20px); visibility: hidden; text-align: center; width: 280px; }
+    .share-modal.active { opacity: 1; transform: translate(-50%, -50%) scale(1); visibility: visible; }
+    .modal-icon { width: 45px; height: 45px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
     @media (max-width: 600px) {
         .header { padding: 8px 15px; border-radius: 20px; min-height: 50px; }
-        .logo { font-size: 13px; }
-        .logo-img { height: 22px; }
+        .logo { font-size: 13px; } .logo-img { height: 22px; }
         .main-container { top: 85px; padding-top: 20px; }
         .player-wrapper { border-radius: 16px; margin-bottom: 25px; }
         .video-title { font-size: 18px; }
-        
         .bottom-bar { padding: 10px 15px 15px 15px; }
         .ctrl-btn { font-size: 18px; width: 38px; height: 38px; }
         input[type=range] { width: 60px; }
-        .ctrl-group { gap: 8px; }
-        .live-badge { font-size: 11px; margin-right: 5px; }
+        .ctrl-group { gap: 8px; } .live-badge { font-size: 11px; margin-right: 5px; }
     }
-    
-    /* LANDSCAPE OPTIMIZATION */
-    @media (orientation: landscape) and (max-height: 500px) {
-        .main-container { padding-top: 10px; }
-        .player-wrapper { max-width: 80vh; margin-bottom: 15px; }
-        .header-container { top: 10px; }
-    }
-
-    .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--header-bg); border: 1px solid var(--border); padding: 20px 30px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 11000; opacity: 0; pointer-events: auto; transition: 0.3s; backdrop-filter: blur(20px); visibility: hidden; }
-    .share-modal.active { opacity: 1; transform: translate(-50%, -50%) scale(1); visibility: visible; }
-    .modal-icon { width: 45px; height: 45px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
   </style>
 </head>
-<body onload="initPage()">
+<body>
+
+<div id="expiredScreen">
+    <div class="expired-icon"><i class="fas fa-ban"></i></div>
+    <h1 style="margin:0 0 10px 0;">Link Expired</h1>
+    <p style="color:#888;">This secure link was only valid for 2 minutes.</p>
+    <a href="https://mem-collection.vercel.app" style="color:var(--accent); margin-top:20px; text-decoration:none; border:1px solid var(--accent); padding:10px 20px; border-radius:20px;">Return Home</a>
+</div>
 
 <div class="header-container" id="mainHeader">
     <div class="header">
@@ -146,7 +109,7 @@
         </div>
         <div class="nav-right">
             <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
-            <button class="icon-btn" onclick="shareLive()"><i class="fas fa-share-nodes"></i></button>
+            <button class="icon-btn" onclick="broadcastShare()"><i class="fas fa-share-nodes"></i></button>
         </div>
     </div>
 </div>
@@ -155,7 +118,6 @@
     <div class="player-wrapper" id="videoContainer">
         <video id="videoPlayer" playsinline crossorigin="anonymous" autoplay muted poster="https://res.cloudinary.com/dp6x9xmku/image/upload/v1771258706/holiday_j89g2g.jpg"></video>
         <div class="center-icon" id="centerIcon"><i class="fas fa-play"></i></div>
-        
         <div class="controls-overlay" id="controlsOverlay">
             <div class="bottom-bar">
                 <div class="ctrl-group">
@@ -176,8 +138,9 @@
     <div class="video-info">
         <h1 class="video-title" id="videoTitle">SEVENTEEN 2025 JAPAN FANMEETING 'HOLIDAY'</h1>
         <div class="video-meta">
-            <span><i class="far fa-eye"></i> Watching Now</span>
-            <span><i class="far fa-calendar"></i> Feb 21, 2026</span>
+            <span class="stat-item"><i class="far fa-eye"></i> <span id="liveCount">...</span> Watching</span>
+            <span class="stat-item"><i class="fas fa-share"></i> <span id="shareCount">0</span> Shares</span>
+            <span class="stat-item"><i class="far fa-calendar"></i> Feb 21, 2026</span>
         </div>
     </div>
 </div>
@@ -185,45 +148,129 @@
 <div id="shareModal" class="share-modal">
     <div class="modal-icon"><i class="fas fa-check"></i></div>
     <h3 style="color:var(--text); margin:0; font-size:16px;">Link Copied!</h3>
+    <p style="color:#888; font-size:12px; margin:0;">This link will expire in<br><b style="color:var(--text);">2 minutes</b>.</p>
 </div>
 
 <script>
-    // --- SECURITY ---
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.onkeydown = e => {
-        if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 67, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
-    };
+    // --- GLOBAL CONFIG & VARS ---
+    const SUPABASE_URL = 'https://qycukzzueysguuygzdcx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_0O9VOP25-PsAYknWeS3A7Q_ocat-IZz';
+    let channel = null;
 
-    // --- URL & SHARE ---
-    function updateUrlWithParams() {
-        const title = encodeURIComponent(document.getElementById('videoTitle').innerText);
-        const rand = Math.floor(100000 + Math.random() * 900000);
-        const newUrl = window.location.pathname + `?title=${title}&token=svtzonevault-${rand}`;
-        window.history.replaceState(null, '', newUrl);
-    }
+    // --- 1. STARTUP LOGIC ---
+    window.addEventListener('load', () => {
+        // Check 2 min expiry first
+        if (!checkExpiry()) return;
 
-    function shareLive() {
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            const modal = document.getElementById('shareModal');
-            modal.classList.add('active');
-            setTimeout(() => modal.classList.remove('active'), 2000);
-        });
-    }
-
-    const themeIcon = document.getElementById('themeIcon');
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        const isLight = document.body.classList.contains('light-mode');
-        localStorage.setItem('zoneTheme', isLight ? 'light' : 'dark');
-        themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
-    }
-
-    function initPage() {
+        // Init Theme
         if (localStorage.getItem('zoneTheme') === 'light') {
             document.body.classList.add('light-mode');
-            themeIcon.className = 'fas fa-sun';
+            document.getElementById('themeIcon').className = 'fas fa-sun';
         }
-        updateUrlWithParams();
+
+        // Init Player
+        initPlayer();
+        
+        // Init Realtime Features
+        initRealtime();
+    });
+
+    // --- 2. EXPIRY CHECKER ---
+    function checkExpiry() {
+        const params = new URLSearchParams(window.location.search);
+        const expiresAt = params.get('exp');
+        if (expiresAt) {
+            const now = Date.now();
+            if (now > parseInt(expiresAt)) {
+                document.getElementById('expiredScreen').style.display = 'flex';
+                document.getElementById('mainHeader').style.display = 'none';
+                document.querySelector('.main-container').style.display = 'none';
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- 3. SHARE & BROADCAST LOGIC (REALTIME) ---
+    async function broadcastShare() {
+        // A. Visual Feedback Immediately
+        const modal = document.getElementById('shareModal');
+        modal.classList.add('active');
+        setTimeout(() => modal.classList.remove('active'), 3000);
+        
+        // B. Generate 2-Min Link & Copy
+        const now = Date.now();
+        const expiryTime = now + (2 * 60 * 1000); 
+        const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+        const shareUrl = `${baseUrl}?title=SVT_ZONE_LIVE&exp=${expiryTime}`;
+        
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+        } catch (e) {
+            console.log("Clipboard not supported");
+        }
+
+        // C. Update Local UI
+        incrementShareUI();
+
+        // D. Broadcast to OTHERS (Realtime)
+        if (channel) {
+            await channel.send({
+                type: 'broadcast',
+                event: 'new-share',
+                payload: { time: now }
+            });
+        }
+    }
+
+    function incrementShareUI() {
+        const el = document.getElementById('shareCount');
+        let current = parseInt(el.innerText.replace(/,/g, '')) || 0;
+        el.innerText = (current + 1).toLocaleString();
+        el.style.color = '#8b5cf6'; // Flash Purple
+        setTimeout(() => el.style.color = '', 300);
+    }
+
+    // --- 4. SUPABASE SETUP ---
+    function initRealtime() {
+        try {
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const viewerId = Math.random().toString(36).substring(2, 10);
+            
+            // Connect to Room
+            channel = client.channel('svt_live_room_v1', {
+                config: { presence: { key: viewerId } }
+            });
+
+            // Listen for Viewers (Presence)
+            channel.on('presence', { event: 'sync' }, () => {
+                const state = channel.presenceState();
+                const count = Object.keys(state).length;
+                const el = document.getElementById('liveCount');
+                el.innerText = count.toLocaleString();
+                el.style.color = '#22c55e';
+                setTimeout(() => el.style.color = '', 300);
+            });
+
+            // Listen for Shares (Broadcast)
+            channel.on('broadcast', { event: 'new-share' }, (payload) => {
+                incrementShareUI(); // Someone else shared!
+            });
+
+            // Go Online
+            channel.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await channel.track({ online_at: new Date().toISOString() });
+                }
+            });
+
+        } catch (err) {
+            console.error("Supabase Error:", err);
+        }
+    }
+
+    // --- 5. PLAYER & UI CONTROLS ---
+    function initPlayer() {
         const video = document.getElementById('videoPlayer');
         const streamUrl = 'https://nl.utako.moe/NHK_G/index.m3u8';
         if (Hls.isSupported()) {
@@ -242,6 +289,7 @@
     const fsBtn = document.getElementById('fsBtn');
     const centerIcon = document.getElementById('centerIcon');
     const videoElem = document.getElementById('videoPlayer');
+    const themeIcon = document.getElementById('themeIcon');
     let lastTap = 0, controlsTimeout;
 
     function showControls() { 
@@ -266,6 +314,13 @@
         showControls();
     }
 
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('zoneTheme', isLight ? 'light' : 'dark');
+        themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
     playBtn.onclick = e => { e.stopPropagation(); togglePlay(); };
     muteBtn.onclick = e => {
         e.stopPropagation();
@@ -275,13 +330,11 @@
         muteBtn.innerHTML = videoElem.volume === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
         showControls();
     };
-
     volumeSlider.oninput = e => {
         videoElem.volume = e.target.value;
         videoElem.muted = videoElem.volume === 0;
         muteBtn.innerHTML = videoElem.volume === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     };
-
     fsBtn.onclick = e => {
         e.stopPropagation();
         if (!document.fullscreenElement) {
@@ -295,7 +348,6 @@
             fsBtn.innerHTML = '<i class="fas fa-expand"></i>';
         }
     };
-
     function animateIcon(icon) {
         centerIcon.innerHTML = `<i class="fas ${icon}"></i>`;
         centerIcon.classList.remove('animate', 'fade-out');
@@ -303,6 +355,10 @@
         centerIcon.classList.add('animate');
         setTimeout(() => centerIcon.classList.add('fade-out'), 300);
     }
+    
+    // Security
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = e => { if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 67, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false; };
 </script>
 </body>
 </html>
