@@ -360,7 +360,7 @@
         const customLink = currentItem.downloadUrl;
 
         // If user provided a specific link (and didn't leave the placeholder)
-        if (customLink && customLink !== "PASTE_YOUR_DOWNLOAD_LINK_HERE" && customLink !== "") {
+        if (customLink && customLink !== "" && customLink !== "") {
             window.open(customLink, '_blank');
         } else {
             // Fallback: Download the image file directly
