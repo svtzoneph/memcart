@@ -59,7 +59,6 @@
     .video-title { margin: 0 0 20px 0; font-size: 24px; font-weight: 800; line-height: 1.2; color: var(--text); text-transform: uppercase; }
     .video-meta { font-size: 13px; color: #888; display: flex; align-items: center; gap: 10px; font-weight: 600; flex-wrap: wrap;}
     
-    /* MODIFIED: Rounded Box Styles for Stats */
     .stat-item { 
         display: flex; 
         align-items: center; 
@@ -86,7 +85,7 @@
     .center-icon.animate { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
     .center-icon.fade-out { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 
-    /* EXPIRED SCREEN */
+    /* EXPIRED SCREEN (Hidden by default now) */
     #expiredScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
     .expired-icon { font-size: 50px; color: var(--error); margin-bottom: 20px; }
 
@@ -130,7 +129,7 @@
 <div id="expiredScreen">
     <div class="expired-icon"><i class="fas fa-ban"></i></div>
     <h1 style="margin:0 0 10px 0;">Link Expired</h1>
-    <p style="color:#888;">This secure link was only valid for 2 minutes.</p>
+    <p style="color:#888;">This secure link is no longer valid.</p>
     <a href="https://mem-collection.vercel.app" style="color:var(--accent); margin-top:20px; text-decoration:none; border:1px solid var(--accent); padding:10px 20px; border-radius:20px;">Return Home</a>
 </div>
 
@@ -185,7 +184,7 @@
 <div id="shareModal" class="share-modal">
     <div class="modal-icon"><i class="fas fa-check"></i></div>
     <h3 style="color:var(--text); margin:0; font-size:16px;">Link Copied!</h3>
-    <p style="color:#888; font-size:12px; margin:0;">This secure link expires in<br><b style="color:var(--text);">2 minutes</b>.</p>
+    <p style="color:#888; font-size:12px; margin:0;">Share this link with your friends!</p>
 </div>
 
 <script>
@@ -197,10 +196,19 @@
 
 // --- START ---
     window.addEventListener('load', () => {
-        // MODIFIED: REMOVED AUTO-EXPIRY GENERATION HERE.
-        // The page will now load normally without changing the URL for the main user.
+        // 1. Generate RANDOM NUMBER url on load (no expiry)
+        const params = new URLSearchParams(window.location.search);
+        // If there is no 'rmd' parameter, add one
+        if (!params.get('rmd')) {
+            const randomNum = Math.floor(Math.random() * 900000000) + 100000000; // Generate random ID
+            const title = document.getElementById('videoTitle').innerText;
+            const newUrl = `${window.location.pathname}?title=${encodeURIComponent(title)}&token=svtzoneph&rmd=${randomNum}`;
+            
+            // Updates address bar immediately
+            window.history.replaceState(null, '', newUrl);
+        }
 
-        // 1. Run checks
+        // 2. Check Expiry (Only if 'exp' param exists from old links)
         if (!checkExpiry()) return;
 
         if (localStorage.getItem('zoneTheme') === 'light') {
@@ -224,12 +232,12 @@
         update();
     }
 
-    // --- EXPIRY ---
+    // --- EXPIRY CHECK ---
     function checkExpiry() {
         const params = new URLSearchParams(window.location.search);
         const expiresAt = params.get('exp');
         
-        // Only check expiry if the 'exp' parameter actually exists
+        // If the URL has 'exp', check it. If it has 'rmd', ignore expiry.
         if (expiresAt) {
             const now = Date.now();
             if (now > parseInt(expiresAt)) {
@@ -244,17 +252,14 @@
 
 // --- SHARE LOGIC ---
     async function handleShare() {
-        const now = Date.now();
-        const expiryTime = now + (2 * 60 * 1000); // 2 minutes from now
+        // Generate a NEW random number for the shared link
+        const randomNum = Math.floor(Math.random() * 900000000) + 100000000;
         const baseUrl = window.location.origin + window.location.pathname;
         const title = document.getElementById('videoTitle').innerText;
         
-        // This generates the expiring link for the clipboard
-        const queryParams = `?title=${encodeURIComponent(title)}&token=svtzonevault&exp=${expiryTime}`;
+        // Use 'rmd' instead of 'exp'
+        const queryParams = `?title=${encodeURIComponent(title)}&token=svtzoneph&rmd=${randomNum}`;
         const shareUrl = baseUrl + queryParams;
-        
-        // MODIFIED: Removed window.history.replaceState. 
-        // We do NOT want to change the current user's URL to an expiring one.
         
         try {
             await navigator.clipboard.writeText(shareUrl);
